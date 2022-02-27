@@ -1,1 +1,1 @@
-export * from './storm-glass-client'
+export * from './storm-glass-client';

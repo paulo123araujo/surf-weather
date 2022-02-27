@@ -1,4 +1,4 @@
-import { AxiosStatic } from "axios";
+import { AxiosStatic } from 'axios';
 
 export interface StormGlassPointSource {
   [key: string]: number;
@@ -37,13 +37,25 @@ export class StormGlassClient {
 
   constructor(protected request: AxiosStatic) {}
 
-  public async fetchPoints(latitude: number, longitude: number): Promise<ForecastPoint[]> {
-    const response = await this.request.get<StormGlassForecastResponse>(`https://api.stormglass.io/v2/weather/point?lat=${latitude}&lng=${longitude}&params=${this.stormGlassAPIParams}&source=${this.stormGlassAPISource}`);
+  public async fetchPoints(
+    latitude: number,
+    longitude: number
+  ): Promise<ForecastPoint[]> {
+    const response = await this.request.get<StormGlassForecastResponse>(
+      `https://api.stormglass.io/v2/weather/point?lat=${latitude}&lng=${longitude}&params=${this.stormGlassAPIParams}&source=${this.stormGlassAPISource}`,
+      {
+        headers: {
+          Authorization: 'fake-token',
+        },
+      }
+    );
 
     return this.normalizeResponse(response.data);
   }
 
-  private normalizeResponse(points: StormGlassForecastResponse): ForecastPoint[] {
+  private normalizeResponse(
+    points: StormGlassForecastResponse
+  ): ForecastPoint[] {
     return points.hours.filter(this.isValidPoint.bind(this)).map((point) => ({
       swellDirection: point.swellDirection[this.stormGlassAPISource],
       swellHeight: point.swellHeight[this.stormGlassAPISource],
