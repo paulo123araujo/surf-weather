@@ -1,6 +1,6 @@
 import { StormGlassClient } from '@src/clients';
 import stormGlassNormalizedResponseFixture from '@test/fixtures/stormglass_normalized_response_3_hours.json';
-import { Beach, BeachPosition, ForecastService } from '@src/services/forecast-service';
+import { Beach, BeachPosition, ForecastProcessingInternalError, ForecastService } from '@src/services/forecast-service';
 
 jest.mock('@src/clients/storm-glass-client.ts');
 
@@ -87,5 +87,30 @@ describe('Forecast Service', () => {
     const beachesWithRating = await forecastService.processForecastForBeaches(beaches);
 
     expect(beachesWithRating).toEqual(expectedResponse);
+  });
+
+  test('should return an empty list when the beaches array is empty', async () => {
+    const forecastService = new ForecastService();
+    const response = await forecastService.processForecastForBeaches([]);
+
+    expect(response).toEqual([]);
+  });
+
+  test('should throw internal processing error when something goes wrong during the rating process', async () => {
+    const beaches: Beach[] = [
+      {
+        lat: -33.792726,
+        lng: 151.289824,
+        name: 'Manly',
+        position: BeachPosition.E,
+        user: 'some-id',
+      },
+    ];
+
+    mockedClient.fetchPoints.mockRejectedValue('Error fetching data');
+
+    const forecastService = new ForecastService(mockedClient);
+
+    await expect(forecastService.processForecastForBeaches(beaches)).rejects.toThrow(ForecastProcessingInternalError);
   });
 });
