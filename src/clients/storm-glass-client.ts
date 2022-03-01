@@ -42,12 +42,15 @@ export class ClientRequestError extends InternalError {
 
 export class StormGlassResponseError extends InternalError {
   constructor(message: string) {
-    const internalMessage = 'Unexpected error returned by the StormGlass service';
+    const internalMessage =
+      'Unexpected error returned by the StormGlass service';
     super(`${internalMessage}: ${message}`);
   }
 }
 
-const stormGlassResourceConfig: IConfig = config.get('App.resources.StormGlass');
+const stormGlassResourceConfig: IConfig = config.get(
+  'App.resources.StormGlass',
+);
 
 export class StormGlassClient {
   readonly stormGlassAPIParams =
@@ -58,16 +61,20 @@ export class StormGlassClient {
 
   public async fetchPoints(
     latitude: number,
-    longitude: number
+    longitude: number,
   ): Promise<ForecastPoint[]> {
     try {
       const response = await this.request.get<StormGlassForecastResponse>(
-        `${stormGlassResourceConfig.get('apiUrl')}/weather/point?lat=${latitude}&lng=${longitude}&params=${this.stormGlassAPIParams}&source=${this.stormGlassAPISource}`,
+        `${stormGlassResourceConfig.get(
+          'apiUrl',
+        )}/weather/point?lat=${latitude}&lng=${longitude}&params=${
+          this.stormGlassAPIParams
+        }&source=${this.stormGlassAPISource}`,
         {
           headers: {
             Authorization: stormGlassResourceConfig.get('apiToken'),
           },
-        }
+        },
       );
 
       return this.normalizeResponse(response.data);
@@ -75,9 +82,7 @@ export class StormGlassClient {
       if (err instanceof Error && HTTPUtil.Request.isRequestError(err)) {
         const error = HTTPUtil.Request.extractErrorData(err);
         throw new StormGlassResponseError(
-          `Error: ${JSON.stringify(error.data)} Code: ${
-            error.status
-          }`
+          `Error: ${JSON.stringify(error.data)} Code: ${error.status}`,
         );
       }
       throw new ClientRequestError((err as { message: any }).message);
@@ -85,7 +90,7 @@ export class StormGlassClient {
   }
 
   private normalizeResponse(
-    points: StormGlassForecastResponse
+    points: StormGlassForecastResponse,
   ): ForecastPoint[] {
     return points.hours.filter(this.isValidPoint.bind(this)).map((point) => ({
       swellDirection: point.swellDirection[this.stormGlassAPISource],
