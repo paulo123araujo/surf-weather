@@ -54,8 +54,8 @@ describe('Beach forecast functional tests', () => {
       })
       .replyWithError('Something went wrong');
 
-      const { status } = await global.testRequest.get('/forecast');
+    const { status } = await global.testRequest.get('/forecast');
 
-      expect(status).toBe(500);
+    expect(status).toBe(500);
   });
 });
